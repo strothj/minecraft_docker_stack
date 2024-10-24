@@ -1,6 +1,6 @@
 FROM debian:bookworm-20241016-slim
-ARG PYTHON_VERSION=3.11.2-1+b1
 ARG ANSIBLE_VERSION=10.5.0
+ARG PYTHON_VERSION=3.11.2-1+b1
 
 RUN <<EOF
   set -ex
@@ -37,3 +37,12 @@ RUN <<EOF
   source /opt/venv/bin/activate
   python3 -m pip install ansible==$ANSIBLE_VERSION
 EOF
+
+ENV CLOUD_PROVIDER_API_KEY_FILE=/run/secrets/cloud_provider_api_key
+ENV CLOUD_PROVIDER_FILE=/run/secrets/cloud_provider
+
+COPY playbook.* /opt/ansible/
+
+COPY --chmod=544 entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["/bin/bash", "-c", "while true; do sleep 1; done"]

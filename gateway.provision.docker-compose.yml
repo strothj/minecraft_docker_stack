@@ -1,0 +1,16 @@
+name: mds_gateway_provision
+
+secrets:
+  cloud_provider:
+    file: ./secrets/cloud_provider
+  cloud_provider_api_key:
+    file: ./secrets/cloud_provider_api_key
+
+services:
+  ansible_gateway_provisioner:
+    build:
+      context: ./ansible_container
+    command: ["provision"]
+    secrets:
+      - cloud_provider
+      - cloud_provider_api_key
