@@ -22,16 +22,18 @@ RUN <<EOF
     --system \
     --uid 1000 \
     ansible
+  mkdir /opt/ansible /opt/venv
+  chown -R ansible:ansible /opt/ansible /opt/venv
 EOF
 
 USER ansible
-WORKDIR /home/ansible
+WORKDIR /opt/ansible
 SHELL ["/bin/bash", "-c"]
 
 RUN <<EOF
   set -ex
-  python3 -m venv venv
-  source venv/bin/activate
+  echo "source /opt/venv/bin/activate" >> ~/.bashrc
+  python3 -m venv /opt/venv
+  source /opt/venv/bin/activate
   python3 -m pip install ansible==$ANSIBLE_VERSION
-  echo "source venv/bin/activate" >> ~/.bashrc
 EOF
