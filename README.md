@@ -18,10 +18,14 @@ containers for Minecraft servers, Discord bots, and databases.
 To configure this project, remove the _.example_ suffix from the files in the
 _secrets_ folder and populate them with appropriate values.
 
-| File Name              | Description                                           | Supported Values |
-| ---------------------- | ----------------------------------------------------- | ---------------- |
-| cloud_provider         | The chosen cloud provider to host the gateway server. | vultr            |
-| cloud_provider_api_key | The API key for the cloud provider.                   |                  |
+| File Name                          | Description                                                                | Supported Values | Must Be Unique on Cloud Provider |
+| ---------------------------------- | -------------------------------------------------------------------------- | ---------------- | -------------------------------- |
+| cloud_provider                     | The chosen cloud provider to host the gateway server.                      | vultr            |                                  |
+| cloud_provider_api_key             | The API key for the cloud provider.                                        |                  |                                  |
+| gateway_firewall_group_description | The description of the firewall group to create on the cloud provider.     |                  | True                             |
+| gateway_ssh_key                    | The SSH key to use for connecting to the gateway server.                   |                  |
+| gateway_ssh_key_name               | The name of the SSH key to use for connecting to the gateway server.       |                  | True                             |
+| gateway_ssh_key_public_key         | The public key of the SSH key to use for connecting to the gateway server. |                  |
 
 ## Docker Compose Files
 

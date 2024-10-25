@@ -6,6 +6,13 @@
       {{
         lookup("ansible.builtin.file", "/run/secrets/cloud_provider_api_key")
       }}
+    firewall_group_description: >-
+      {{
+        lookup(
+          "ansible.builtin.file",
+          "/run/secrets/gateway_firewall_group_description"
+        )
+      }}
     ssh_key_name: >-
       {{
         lookup("ansible.builtin.file", "/run/secrets/gateway_ssh_key_name")
@@ -43,6 +50,7 @@
             ssh_key: '{{ ssh_key }}'
             state: present
           register: ssh_key_response
+
         - name: Capture provisioned SSH key ID.
           set_fact:
             ssh_key_id: '{{ ssh_key_response.vultr_ssh_key.id }}'
@@ -50,3 +58,39 @@
 
     - debug:
         var: ssh_key_id
+
+    - name: Fetch the list of firewall groups.
+      vultr.cloud.firewall_group_info:
+        api_key: '{{ api_key }}'
+      register: firewall_group_info_response
+
+    - name: Select the firewall groups by description.
+      set_fact:
+        firewall_group_entries: >-
+          {{
+            firewall_group_info_response.vultr_firewall_group_info |
+            selectattr("description", "equalto", firewall_group_description)
+          }}
+
+    - name: Capture the firewall group's ID if it exists.
+      set_fact:
+        firewall_group_id: '{{ firewall_group_entries[0].id }}'
+      when: firewall_group_entries | length > 0
+
+    - name: Provision new firewall group if it is missing.
+      block:
+        - name: Provision new firewall group.
+          vultr.cloud.firewall_group:
+            api_key: '{{ api_key }}'
+            description: '{{ firewall_group_description }}'
+            state: present
+          register: firewall_group_response
+
+        - name: Capture provisioned firewall group ID.
+          set_fact:
+            firewall_group_id: >-
+              {{ firewall_group_response.vultr_firewall_group.id }}
+      when: firewall_group_entries | length == 0
+
+    - debug:
+        var: firewall_group_id
