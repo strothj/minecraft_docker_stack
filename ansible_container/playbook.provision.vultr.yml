@@ -2,15 +2,51 @@
   hosts: localhost
   gather_facts: false
   vars:
-    api_key_file: "{{ lookup('ansible.builtin.env', 'CLOUD_PROVIDER_API_KEY_FILE') }}"
-    api_key: "{{ lookup('ansible.builtin.file', '{{ api_key_file }}') }}"
-  tasks:
-    - name: Fetch the list of SSH keys.
-      vultr.cloud.ssh_key_info:
-        api_key: "{{ api_key }}"
-      register: vultr_ssh_keys
+    api_key: >-
+      {{
+        lookup("ansible.builtin.file", "/run/secrets/cloud_provider_api_key")
+      }}
+    ssh_key_name: >-
+      {{
+        lookup("ansible.builtin.file", "/run/secrets/gateway_ssh_key_name")
+      }}
+    ssh_key: >-
+      {{
+        lookup("ansible.builtin.file", "/run/secrets/gateway_ssh_key_public")
+      }}
 
-    # TODO: Add additional provisioning steps.
-    - name: List SSH keys.
-      ansible.builtin.debug:
-        var: vultr_ssh_keys
+  tasks:
+    - name: Fetch the list of SSH public keys.
+      vultr.cloud.ssh_key_info:
+        api_key: '{{ api_key }}'
+      register: ssh_key_info_response
+
+    - name: Select the SSH keys by name.
+      set_fact:
+        ssh_key_entries: >-
+          {{
+            ssh_key_info_response.vultr_ssh_key_info |
+            selectattr("name", "equalto", ssh_key_name)
+          }}
+
+    - name: Capture SSH key's ID if it exists.
+      set_fact:
+        ssh_key_id: '{{ ssh_key_entries[0].id }}'
+      when: ssh_key_entries | length > 0
+
+    - name: Provision new SSH key if it is missing.
+      block:
+        - name: Provision new public SSH key.
+          vultr.cloud.ssh_key:
+            api_key: '{{ api_key }}'
+            name: '{{ ssh_key_name }}'
+            ssh_key: '{{ ssh_key }}'
+            state: present
+          register: ssh_key_response
+        - name: Capture provisioned SSH key ID.
+          set_fact:
+            ssh_key_id: '{{ ssh_key_response.vultr_ssh_key.id }}'
+      when: ssh_key_entries | length == 0
+
+    - debug:
+        var: ssh_key_id

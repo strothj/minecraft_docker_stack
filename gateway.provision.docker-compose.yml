@@ -5,6 +5,10 @@ secrets:
     file: ./secrets/cloud_provider
   cloud_provider_api_key:
     file: ./secrets/cloud_provider_api_key
+  gateway_ssh_key_name:
+    file: ./secrets/gateway_ssh_key_name
+  gateway_ssh_key_public:
+    file: ./secrets/gateway_ssh_key_public
 
 services:
   ansible_gateway_provisioner:
@@ -14,3 +18,5 @@ services:
     secrets:
       - cloud_provider
       - cloud_provider_api_key
+      - gateway_ssh_key_name
+      - gateway_ssh_key_public

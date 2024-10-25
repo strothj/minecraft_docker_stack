@@ -38,9 +38,6 @@ RUN <<EOF
   python3 -m pip install ansible==$ANSIBLE_VERSION
 EOF
 
-ENV CLOUD_PROVIDER_API_KEY_FILE=/run/secrets/cloud_provider_api_key
-ENV CLOUD_PROVIDER_FILE=/run/secrets/cloud_provider
-
 COPY playbook.* /opt/ansible/
 
 COPY --chmod=544 entrypoint.sh /
