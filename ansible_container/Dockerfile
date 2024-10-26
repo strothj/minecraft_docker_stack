@@ -38,7 +38,7 @@ RUN <<EOF
   python3 -m pip install ansible==$ANSIBLE_VERSION
 EOF
 
-COPY playbook.* /opt/ansible/
+COPY inventory.* playbook.* /opt/ansible/
 
 COPY --chmod=544 entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
