@@ -1,0 +1,27 @@
+- name: Tear down gateway.
+  hosts: localhost
+  gather_facts: false
+  vars:
+    api_key:                    '{{ lookup("ansible.builtin.file", "/run/secrets/cloud_provider_api_key") }}'
+    firewall_group_description: '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_firewall_group_description") }}'
+    instance_label:             '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_instance_label") }}'
+    ssh_key_name:               '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_ssh_key_name") }}'
+  tasks:
+    - name: Delete instance.
+      vultr.cloud.instance:
+        api_key: '{{ api_key }}'
+        label: '{{ instance_label }}'
+        region: atl
+        state: absent
+
+    - name: Delete firewall group.
+      vultr.cloud.firewall_group:
+        api_key: '{{ api_key }}'
+        description: '{{ firewall_group_description }}'
+        state: absent
+
+    - name: Delete SSH key.
+      vultr.cloud.ssh_key:
+        api_key: '{{ api_key }}'
+        name: '{{ ssh_key_name }}'
+        state: absent
