@@ -227,7 +227,7 @@
         state: started
       register: cloud_instance_response
 
-    - name: Wait for SSH to come on the gateway.
+    - name: Wait for SSH to come up on the gateway.
       ansible.builtin.wait_for:
         host: "{{ cloud_instance_response.vultr_instance.main_ip }}"
         port: 22
