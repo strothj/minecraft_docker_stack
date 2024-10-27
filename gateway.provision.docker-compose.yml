@@ -5,6 +5,8 @@ secrets:
     file: ./secrets/cloud_provider
   cloud_provider_api_key:
     file: ./secrets/cloud_provider_api_key
+  gateway_control_node_ips:
+    file: ./secrets/gateway_control_node_ips
   gateway_firewall_group_description:
     file: ./secrets/gateway_firewall_group_description
   gateway_ssh_key_name:
@@ -20,6 +22,7 @@ services:
     secrets:
       - cloud_provider
       - cloud_provider_api_key
+      - gateway_control_node_ips
       - gateway_firewall_group_description
       - gateway_ssh_key_name
       - gateway_ssh_key_public

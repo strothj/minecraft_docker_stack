@@ -1,27 +1,13 @@
-- name: Provision gateway instance, firewall group, and SSH key on Vultr.
+# TODO: Provision instance.
+# - Use "wait_for" module to wait for SSH service to come up?
+
+- name: Provision gateway SSH key.
   hosts: localhost
   gather_facts: false
   vars:
-    api_key: >-
-      {{
-        lookup("ansible.builtin.file", "/run/secrets/cloud_provider_api_key")
-      }}
-    firewall_group_description: >-
-      {{
-        lookup(
-          "ansible.builtin.file",
-          "/run/secrets/gateway_firewall_group_description"
-        )
-      }}
-    ssh_key_name: >-
-      {{
-        lookup("ansible.builtin.file", "/run/secrets/gateway_ssh_key_name")
-      }}
-    ssh_key: >-
-      {{
-        lookup("ansible.builtin.file", "/run/secrets/gateway_ssh_key_public")
-      }}
-
+    api_key:      '{{ lookup("ansible.builtin.file", "/run/secrets/cloud_provider_api_key") }}'
+    ssh_key:      '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_ssh_key_public") }}'
+    ssh_key_name: '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_ssh_key_name") }}'
   tasks:
     - name: Fetch the list of SSH public keys.
       vultr.cloud.ssh_key_info:
@@ -56,9 +42,15 @@
             ssh_key_id: '{{ ssh_key_response.vultr_ssh_key.id }}'
       when: ssh_key_entries | length == 0
 
-    - debug:
-        var: ssh_key_id
-
+- name: Provision gateway firewall.
+  hosts: localhost
+  gather_facts: false
+  vars:
+    api_key:                    '{{ lookup("ansible.builtin.file", "/run/secrets/cloud_provider_api_key") }}'
+    control_node_ips:           '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_control_node_ips") }}'
+    firewall_group_description: '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_firewall_group_description") }}'
+  tasks:
+    #region Firewall Group
     - name: Fetch the list of firewall groups.
       vultr.cloud.firewall_group_info:
         api_key: '{{ api_key }}'
@@ -72,25 +64,155 @@
             selectattr("description", "equalto", firewall_group_description)
           }}
 
-    - name: Capture the firewall group's ID if it exists.
-      set_fact:
-        firewall_group_id: '{{ firewall_group_entries[0].id }}'
-      when: firewall_group_entries | length > 0
-
-    - name: Provision new firewall group if it is missing.
-      block:
-        - name: Provision new firewall group.
-          vultr.cloud.firewall_group:
-            api_key: '{{ api_key }}'
-            description: '{{ firewall_group_description }}'
-            state: present
-          register: firewall_group_response
-
-        - name: Capture provisioned firewall group ID.
-          set_fact:
-            firewall_group_id: >-
-              {{ firewall_group_response.vultr_firewall_group.id }}
+    - name: Provision firewall group if it is missing.
+      vultr.cloud.firewall_group:
+        api_key: '{{ api_key }}'
+        description: '{{ firewall_group_description }}'
+        state: present
       when: firewall_group_entries | length == 0
+    #endregion Firewall Group
 
-    - debug:
-        var: firewall_group_id
+    #region Firewall Rules
+    - name: Generate firewall rules for control nodes.
+      ansible.builtin.set_fact:
+        firewall_rules_control_nodes: >-
+          {{
+            firewall_rules_control_nodes | default([]) +
+            [{
+              "ip_type": item | ansible.utils.ipv4 | ansible.builtin.ternary('v4', 'v6'),
+              "notes": "Allow SSH access from control node.",
+              "port": "22",
+              "subnet": item | ansible.utils.ipaddr("network"),
+              "subnet_size": item | ansible.utils.ipaddr("prefix")
+            }]
+          }}
+      loop: '{{ control_node_ips.splitlines() | ansible.utils.ipaddr }}'
+
+    - name: Fail if no valid firewall rules were generated for control nodes.
+      ansible.builtin.fail:
+        msg: No valid control node IPs provided.
+      when: firewall_rules_control_nodes | length == 0
+
+    - name: Generate remaining firewall rules.
+      ansible.builtin.set_fact:
+        firewall_rules: >-
+          {{
+            firewall_rules |
+            default(firewall_rules_control_nodes) +
+            [{
+              "ip_type": item[0],
+              "notes": "Allow access to Minecraft %s server." | format(item[1]),
+              "port": (item[1] == "staging") | ternary("25564", "25565"),
+              "subnet": (item[0] == "v4") | ternary("0.0.0.0", "::"),
+              "subnet_size": 0
+            }]
+          }}
+      loop: '{{ ["v4", "v6"] | product(["staging", "production"]) }}'
+
+    - name: Display firewall rules.
+      debug:
+        var: firewall_rules
+
+    # Generate a list of hashes like so:
+    # [
+    #   "action=accept:ip_type=v4:notes=Allow SSH access from control node.:port=22:protocol=tcp:source=:subnet=123.123.123.123:subnet_size=32",
+    #   // ...
+    # ]
+    - name: Generate hashes of firewall rules.
+      ansible.builtin.set_fact:
+        firewall_rule_hashes: >-
+          {{
+            firewall_rule_hashes |
+            default([]) +
+            [
+              "action=accept:ip_type=%s:notes=%s:port=%s:protocol=tcp:source=:subnet=%s:subnet_size=%s" |
+              format(item.ip_type, item.notes, item.port, item.subnet, item.subnet_size)
+            ]
+          }}
+      loop: '{{ firewall_rules }}'
+
+    - name: Display firewall rule hashes.
+      debug:
+        var: firewall_rule_hashes
+    #endregion Firewall Rules
+
+    #region Remove Undesired Existing Firewall Rules
+    - name: Retrieve existing firewall rules.
+      vultr.cloud.firewall_rule_info:
+        api_key: '{{ api_key }}'
+        group: '{{ firewall_group_description }}'
+      register: firewall_rule_info_response
+
+    - name: Process existing firewall rules.
+      when: firewall_rule_info_response.vultr_firewall_rule_info | length > 0
+      block:
+      - name: Generate hash map for existing firewall rules.
+        ansible.builtin.set_fact:
+          firewall_rules_existing_hash_map: >-
+            {{
+              firewall_rules_existing_hash_map | default({}) | combine({
+                ("action=%s:ip_type=%s:notes=%s:port=%s:protocol=%s:source=%s:subnet=%s:subnet_size=%s" |
+                format(item.action, item.ip_type, item.notes, item.port, item.protocol, item.source, item.subnet, item.subnet_size)): item
+              })
+            }}
+        loop: '{{ firewall_rule_info_response.vultr_firewall_rule_info }}'
+
+      - name: Display hash map for existing firewall rules.
+        debug:
+          var: firewall_rules_existing_hash_map
+
+      - name: Select undesired firewall rules.
+        ansible.builtin.set_fact:
+          firewall_rules_undesired: >-
+            {{
+              firewall_rules_existing_hash_map.keys() |
+              ansible.builtin.difference(firewall_rule_hashes) |
+              map("ansible.builtin.extract", firewall_rules_existing_hash_map)
+            }}
+
+      - name: Display undesired firewall rules.
+        debug:
+          var: firewall_rules_undesired
+
+      - name: Remove undesired firewall rules with sources.
+        vultr.cloud.firewall_rule:
+          api_key: '{{ api_key }}'
+          group: '{{ firewall_group_description }}'
+          ip_type: '{{ item.ip_type }}'
+          notes: '{{ item.notes }}'
+          port: '{{ item.port }}'
+          protocol: '{{ item.protocol }}'
+          source: '{{ item.source }}'
+          state: absent
+        loop: '{{ firewall_rules_undesired }}'
+        when: 'item.source | length > 0'
+
+      - name: Remove undesired firewall rules with subnets.
+        vultr.cloud.firewall_rule:
+          api_key: '{{ api_key }}'
+          group: '{{ firewall_group_description }}'
+          ip_type: '{{ item.ip_type }}'
+          notes: '{{ item.notes }}'
+          port: '{{ item.port }}'
+          protocol: '{{ item.protocol }}'
+          state: absent
+          subnet_size: '{{ item.subnet_size }}'
+          subnet: '{{ item.subnet }}'
+        loop: '{{ firewall_rules_undesired }}'
+        when: 'item.source | length == 0'
+    #endregion Remove Undesired Existing Firewall Rules
+
+    #region Add Firewall Rules
+    - name: Add firewall rules.
+      vultr.cloud.firewall_rule:
+        api_key: '{{ api_key }}'
+        group: '{{ firewall_group_description }}'
+        ip_type: '{{ item.ip_type }}'
+        notes: '{{ item.notes }}'
+        port: '{{ item.port }}'
+        protocol: tcp
+        state: present
+        subnet_size: '{{ item.subnet_size }}'
+        subnet: '{{ item.subnet }}'
+      loop: '{{ firewall_rules }}'
+    #endregion Add Firewall Rules

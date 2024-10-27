@@ -1,5 +1,6 @@
 FROM debian:bookworm-20241016-slim
 ARG ANSIBLE_VERSION=10.5.0
+ARG PYTHON_LIB_NETADDR_VERSION=1.3.0
 ARG PYTHON_VERSION=3.11.2-1+b1
 
 RUN <<EOF
@@ -35,7 +36,9 @@ RUN <<EOF
   echo "source /opt/venv/bin/activate" >> ~/.bashrc
   python3 -m venv /opt/venv
   source /opt/venv/bin/activate
-  python3 -m pip install ansible==$ANSIBLE_VERSION
+  python3 -m pip install \
+    ansible==$ANSIBLE_VERSION \
+    netaddr==$PYTHON_LIB_NETADDR_VERSION # ansible.utils.ipaddr
 EOF
 
 COPY inventory.* playbook.* /opt/ansible/
