@@ -9,6 +9,10 @@ secrets:
     file: ./secrets/gateway_control_node_ips
   gateway_firewall_group_description:
     file: ./secrets/gateway_firewall_group_description
+  gateway_hostname:
+    file: ./secrets/gateway_hostname
+  gateway_instance_label:
+    file: ./secrets/gateway_instance_label
   gateway_ssh_key_name:
     file: ./secrets/gateway_ssh_key_name
   gateway_ssh_key_public:
@@ -24,5 +28,7 @@ services:
       - cloud_provider_api_key
       - gateway_control_node_ips
       - gateway_firewall_group_description
+      - gateway_hostname
+      - gateway_instance_label
       - gateway_ssh_key_name
       - gateway_ssh_key_public

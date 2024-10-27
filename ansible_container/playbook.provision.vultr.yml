@@ -1,6 +1,3 @@
-# TODO: Provision instance.
-# - Use "wait_for" module to wait for SSH service to come up?
-
 - name: Provision gateway SSH key.
   hosts: localhost
   gather_facts: false
@@ -216,3 +213,36 @@
         subnet: '{{ item.subnet }}'
       loop: '{{ firewall_rules }}'
     #endregion Add Firewall Rules
+
+- name: Provision gateway instance.
+  hosts: localhost
+  gather_facts: false
+  vars:
+    api_key:                    '{{ lookup("ansible.builtin.file", "/run/secrets/cloud_provider_api_key") }}'
+    firewall_group_description: '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_firewall_group_description") }}'
+    hostname:                   '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_hostname") }}'
+    instance_label:             '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_instance_label") }}'
+    ssh_key_name:               '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_ssh_key_name") }}'
+  tasks:
+    - name: Provision instance.
+      vultr.cloud.instance:
+        api_key: '{{ api_key }}'
+        backups: false
+        ddos_protection: false
+        enable_ipv6: true
+        firewall_group: "{{ firewall_group_description }}"
+        hostname: "{{ hostname }}"
+        label: "{{ instance_label }}"
+        os: Debian 12 x64 (bookworm)
+        plan: vc2-1c-1gb
+        region: atl
+        ssh_keys:
+          - "{{ ssh_key_name }}"
+        state: started
+      register: cloud_instance_response
+
+    - name: Wait for SSH to come on the gateway.
+      ansible.builtin.wait_for:
+        host: "{{ cloud_instance_response.vultr_instance.main_ip }}"
+        port: 22
+        sleep: 5
