@@ -48,25 +48,11 @@
     firewall_group_description: '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_firewall_group_description") }}'
   tasks:
     #region Firewall Group
-    - name: Fetch the list of firewall groups.
-      vultr.cloud.firewall_group_info:
-        api_key: '{{ api_key }}'
-      register: firewall_group_info_response
-
-    - name: Select the firewall groups by description.
-      set_fact:
-        firewall_group_entries: >-
-          {{
-            firewall_group_info_response.vultr_firewall_group_info |
-            selectattr("description", "equalto", firewall_group_description)
-          }}
-
     - name: Provision firewall group if it is missing.
       vultr.cloud.firewall_group:
         api_key: '{{ api_key }}'
         description: '{{ firewall_group_description }}'
         state: present
-      when: firewall_group_entries | length == 0
     #endregion Firewall Group
 
     #region Firewall Rules
