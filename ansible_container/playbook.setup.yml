@@ -18,6 +18,10 @@
     hostname: '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_hostname") }}'
     timezone: '{{ lookup("ansible.builtin.file", "/run/secrets/timezone") }}'
   tasks:
+    - name: Print IP address
+      debug:
+        var: ansible_host
+
     - name: Set timezone
       community.general.timezone:
         name: '{{ timezone }}'
