@@ -26,3 +26,32 @@
       ansible.builtin.systemd:
         name: cron
         state: restarted
+
+- name: Install Docker.
+  hosts: gateways
+  tasks:
+    - name: Add Docker GPG key.
+      ansible.builtin.get_url:
+        dest: /etc/apt/keyrings/docker.asc
+        group: root
+        mode: "0444"
+        owner: root
+        url: https://download.docker.com/linux/debian/gpg
+
+    - name: Configure Docker apt repository.
+      ansible.builtin.apt_repository:
+        filename: docker.list
+        repo: >-
+          deb
+          [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc]
+          https://download.docker.com/linux/debian bookworm stable
+
+    - name: Install Docker packages.
+      ansible.builtin.apt:
+        cache_valid_time: 3_600 # 60 minutes.
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
