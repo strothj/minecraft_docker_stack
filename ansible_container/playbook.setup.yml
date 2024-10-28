@@ -55,3 +55,63 @@
           - containerd.io
           - docker-buildx-plugin
           - docker-compose-plugin
+
+# Configure the logging driver and enable automatic log rotations so the Docker
+# host doesn't exhaust its storage space.
+# https://docs.docker.com/engine/install/linux-postinstall/#configure-default-logging-driver
+# https://docs.docker.com/engine/logging/drivers/json-file/
+- name: Configure Docker logger.
+  hosts: gateways
+  tasks:
+    - name: Retrieve contents of existing daemon.json
+      ansible.builtin.slurp:
+        src: /etc/docker/daemon.json
+      register: daemon_json_b64
+      ignore_errors: true
+
+    - name: Parse existing daemon.json
+      ansible.builtin.set_fact:
+        daemon_json: >
+          {{
+            daemon_json_b64.content |
+            ansible.builtin.b64decode |
+            ansible.builtin.from_json
+          }}
+      when: daemon_json_b64 is succeeded
+
+    - name: Use empty daemon.json
+      ansible.builtin.set_fact:
+        daemon_json: >
+          {{
+            '{}' |
+            ansible.builtin.from_json
+          }}
+      when: daemon_json_b64 is failed
+
+    - name: Set log driver to json-file and enable automatic log-rotation
+      ansible.builtin.set_fact:
+        daemon_json: >
+          {{
+            daemon_json |
+            ansible.builtin.combine({
+              'log-driver': 'json-file',
+              'log-opts': {
+                'max-size': '10m',
+                'max-file': '3'
+              }
+            })
+          }}
+
+    - name: Write daemon.json
+      ansible.builtin.copy:
+        content: "{{ daemon_json | to_nice_json }}"
+        dest: /etc/docker/daemon.json
+        group: root
+        mode: "0600"
+        owner: root
+      notify: Restart Docker
+  handlers:
+    - name: Restart Docker
+      ansible.builtin.systemd:
+        name: docker
+        state: restarted
