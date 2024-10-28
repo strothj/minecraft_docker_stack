@@ -30,6 +30,11 @@
     - name: Set hostname
       ansible.builtin.hostname:
         name: '{{ hostname }}'
+
+    - name: Set global alias ll for all users
+      ansible.builtin.lineinfile:
+        path: /etc/bash.bashrc
+        line: "alias ll='ls -l'"
   handlers:
     - name: Restart CRON
       ansible.builtin.systemd:
