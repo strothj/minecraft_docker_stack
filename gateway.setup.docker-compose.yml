@@ -9,6 +9,8 @@ secrets:
     file: ./secrets/gateway_instance_label
   gateway_ssh_key:
     file: ./secrets/gateway_ssh_key
+  timezone:
+    file: ./secrets/timezone
 
 services:
   ansible_gateway_setup:
@@ -20,6 +22,7 @@ services:
       - cloud_provider_api_key
       - gateway_instance_label
       - gateway_ssh_key
+      - timezone
     volumes:
       # For access to the known_hosts file.
       - ./ansible_data/.ssh:/home/ansible/.ssh:ro

@@ -12,10 +12,17 @@
       loop: '{{ ansible_play_hosts }}'
       when: item == instance_label
 
-- name: Setup gateway instance.
+- name: Apply general configurations.
   hosts: gateways
+  vars:
+    timezone: '{{ lookup("ansible.builtin.file", "/run/secrets/timezone") }}'
   tasks:
-    - ansible.builtin.debug:
-        var: ansible_facts
-    - ansible.builtin.debug:
-        var: vultr_label
+    - name: Set timezone.
+      community.general.timezone:
+        name: '{{ timezone }}'
+      notify: Restart CRON
+  handlers:
+    - name: Restart CRON
+      ansible.builtin.systemd:
+        name: cron
+        state: restarted

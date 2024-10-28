@@ -29,6 +29,7 @@ _secrets_ folder and populate them with appropriate values.
 | gateway_ssh_key                    | The SSH key to use for connecting to the gateway server.                   |                  |                                  |
 | gateway_ssh_key_name               | The name of the SSH key to use for connecting to the gateway server.       |                  | True                             |
 | gateway_ssh_key_public_key         | The public key of the SSH key to use for connecting to the gateway server. |                  |                                  |
+| timezone                           | The timezone in Linux format, e.g., `America/New_York`                     |                  |                                  |
 
 ## Docker Compose Files
 
