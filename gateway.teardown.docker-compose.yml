@@ -1,4 +1,4 @@
-name: mds_gateway_provision
+name: mds_gateway_teardown
 
 secrets:
   cloud_provider:
