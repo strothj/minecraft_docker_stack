@@ -1,4 +1,4 @@
-- name: Provision gateway SSH key.
+- name: Provision gateway SSH key
   hosts: localhost
   gather_facts: false
   vars:
@@ -6,14 +6,14 @@
     ssh_key:      '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_ssh_key_public") }}'
     ssh_key_name: '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_ssh_key_name") }}'
   tasks:
-    - name: Provision SSH key.
+    - name: Provision SSH key
       vultr.cloud.ssh_key:
         api_key: '{{ api_key }}'
         name: '{{ ssh_key_name }}'
         ssh_key: '{{ ssh_key }}'
         state: present
 
-- name: Provision gateway firewall.
+- name: Provision gateway firewall
   hosts: localhost
   gather_facts: false
   vars:
@@ -22,7 +22,7 @@
     firewall_group_description: '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_firewall_group_description") }}'
   tasks:
     #region Firewall Group
-    - name: Provision firewall group if it is missing.
+    - name: Provision firewall group if it is missing
       vultr.cloud.firewall_group:
         api_key: '{{ api_key }}'
         description: '{{ firewall_group_description }}'
@@ -30,7 +30,7 @@
     #endregion Firewall Group
 
     #region Firewall Rules
-    - name: Generate firewall rules for control nodes.
+    - name: Generate firewall rules for control nodes
       ansible.builtin.set_fact:
         firewall_rules_control_nodes: >-
           {{
@@ -45,12 +45,12 @@
           }}
       loop: '{{ control_node_ips.splitlines() | ansible.utils.ipaddr }}'
 
-    - name: Fail if no valid firewall rules were generated for control nodes.
+    - name: Fail if no valid firewall rules were generated for control nodes
       ansible.builtin.fail:
         msg: No valid control node IPs provided.
       when: firewall_rules_control_nodes | length == 0
 
-    - name: Generate remaining firewall rules.
+    - name: Generate remaining firewall rules
       ansible.builtin.set_fact:
         firewall_rules: >-
           {{
@@ -66,7 +66,7 @@
           }}
       loop: '{{ ["v4", "v6"] | product(["staging", "production"]) }}'
 
-    - name: Display firewall rules.
+    - name: Display firewall rules
       debug:
         var: firewall_rules
 
@@ -75,7 +75,7 @@
     #   "action=accept:ip_type=v4:notes=Allow SSH access from control node.:port=22:protocol=tcp:source=:subnet=123.123.123.123:subnet_size=32",
     #   // ...
     # ]
-    - name: Generate hashes of firewall rules.
+    - name: Generate hashes of firewall rules
       ansible.builtin.set_fact:
         firewall_rule_hashes: >-
           {{
@@ -88,22 +88,22 @@
           }}
       loop: '{{ firewall_rules }}'
 
-    - name: Display firewall rule hashes.
+    - name: Display firewall rule hashes
       debug:
         var: firewall_rule_hashes
     #endregion Firewall Rules
 
     #region Remove Undesired Existing Firewall Rules
-    - name: Retrieve existing firewall rules.
+    - name: Retrieve existing firewall rules
       vultr.cloud.firewall_rule_info:
         api_key: '{{ api_key }}'
         group: '{{ firewall_group_description }}'
       register: firewall_rule_info_response
 
-    - name: Process existing firewall rules.
+    - name: Process existing firewall rules
       when: firewall_rule_info_response.vultr_firewall_rule_info | length > 0
       block:
-      - name: Generate hash map for existing firewall rules.
+      - name: Generate hash map for existing firewall rules
         ansible.builtin.set_fact:
           firewall_rules_existing_hash_map: >-
             {{
@@ -114,11 +114,11 @@
             }}
         loop: '{{ firewall_rule_info_response.vultr_firewall_rule_info }}'
 
-      - name: Display hash map for existing firewall rules.
+      - name: Display hash map for existing firewall rules
         debug:
           var: firewall_rules_existing_hash_map
 
-      - name: Select undesired firewall rules.
+      - name: Select undesired firewall rules
         ansible.builtin.set_fact:
           firewall_rules_undesired: >-
             {{
@@ -127,11 +127,11 @@
               map("ansible.builtin.extract", firewall_rules_existing_hash_map)
             }}
 
-      - name: Display undesired firewall rules.
+      - name: Display undesired firewall rules
         debug:
           var: firewall_rules_undesired
 
-      - name: Remove undesired firewall rules with sources.
+      - name: Remove undesired firewall rules with sources
         vultr.cloud.firewall_rule:
           api_key: '{{ api_key }}'
           group: '{{ firewall_group_description }}'
@@ -144,7 +144,7 @@
         loop: '{{ firewall_rules_undesired }}'
         when: 'item.source | length > 0'
 
-      - name: Remove undesired firewall rules with subnets.
+      - name: Remove undesired firewall rules with subnets
         vultr.cloud.firewall_rule:
           api_key: '{{ api_key }}'
           group: '{{ firewall_group_description }}'
@@ -160,7 +160,7 @@
     #endregion Remove Undesired Existing Firewall Rules
 
     #region Add Firewall Rules
-    - name: Add firewall rules.
+    - name: Add firewall rule
       vultr.cloud.firewall_rule:
         api_key: '{{ api_key }}'
         group: '{{ firewall_group_description }}'
@@ -174,7 +174,7 @@
       loop: '{{ firewall_rules }}'
     #endregion Add Firewall Rules
 
-- name: Provision gateway instance.
+- name: Provision gateway instance
   hosts: localhost
   gather_facts: false
   vars:
@@ -184,7 +184,7 @@
     instance_label:             '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_instance_label") }}'
     ssh_key_name:               '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_ssh_key_name") }}'
   tasks:
-    - name: Provision instance.
+    - name: Provision instance
       vultr.cloud.instance:
         api_key: '{{ api_key }}'
         backups: false
@@ -201,11 +201,11 @@
         state: started
       register: cloud_instance_response
 
-    - name: Wait for SSH to come up on the gateway.
+    - name: Wait for SSH to come up on the gateway
       ansible.builtin.wait_for:
         host: "{{ cloud_instance_response.vultr_instance.main_ip }}"
         port: 22
         sleep: 5
 
-    - name: Write key to known_hosts.
+    - name: Write key to known_hosts
       shell: "ssh-keyscan -H {{ cloud_instance_response.vultr_instance.main_ip }} > /home/ansible/.ssh/known_hosts"
