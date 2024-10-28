@@ -1,4 +1,4 @@
-name: mds_gateway_teardown
+name: mds_ansible_gateway_teardown
 
 secrets:
   cloud_provider:

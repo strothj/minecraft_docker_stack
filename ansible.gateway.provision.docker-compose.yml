@@ -1,4 +1,4 @@
-name: mds_gateway_provision
+name: mds_ansible_gateway_provision
 
 secrets:
   cloud_provider:

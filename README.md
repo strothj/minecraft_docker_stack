@@ -33,8 +33,8 @@ _secrets_ folder and populate them with appropriate values.
 
 ## Docker Compose Files
 
-| File Name                            | Description                       |
-| ------------------------------------ | --------------------------------- |
-| gateway.provision.docker-compose.yml | Provisions the gateway server.    |
-| gateway.setup.docker-compose.yml     | Setup services on gateway server. |
-| gateway.teardown.docker-compose.yml  | Tear down gateway server.         |
+| File Name                                    | Description                       |
+| -------------------------------------------- | --------------------------------- |
+| ansible.gateway.provision.docker-compose.yml | Provisions the gateway server.    |
+| ansible.gateway.setup.docker-compose.yml     | Setup services on gateway server. |
+| ansible.gateway.teardown.docker-compose.yml  | Tear down gateway server.         |
