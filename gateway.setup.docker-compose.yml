@@ -5,6 +5,8 @@ secrets:
     file: ./secrets/cloud_provider
   cloud_provider_api_key:
     file: ./secrets/cloud_provider_api_key
+  gateway_hostname:
+    file: ./secrets/gateway_hostname
   gateway_instance_label:
     file: ./secrets/gateway_instance_label
   gateway_ssh_key:
@@ -20,6 +22,7 @@ services:
     secrets:
       - cloud_provider
       - cloud_provider_api_key
+      - gateway_hostname
       - gateway_instance_label
       - gateway_ssh_key
       - timezone

@@ -15,12 +15,17 @@
 - name: Apply general configurations
   hosts: gateways
   vars:
+    hostname: '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_hostname") }}'
     timezone: '{{ lookup("ansible.builtin.file", "/run/secrets/timezone") }}'
   tasks:
     - name: Set timezone
       community.general.timezone:
         name: '{{ timezone }}'
       notify: Restart CRON
+
+    - name: Set hostname
+      ansible.builtin.hostname:
+        name: '{{ hostname }}'
   handlers:
     - name: Restart CRON
       ansible.builtin.systemd:
