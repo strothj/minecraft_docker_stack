@@ -8,6 +8,21 @@ The gateway is hosted on a cloud provider. Its purpose is to make available a
 public IP address to local services using Docker containers configured for
 reverse proxying.
 
+You can add the gateway as a Docker context:
+
+```shell
+docker context create minecraft_docker_stack --docker "host=ssh://root@123.123.123.123"
+```
+
+You can point your SSH agent to the private key:
+`~/.ssh/config`:
+
+```
+# Minecraft Gateway
+Host 123.123.123.123
+  IdentityFile ~/code/minecraft_docker_stack/secrets/gateway_ssh_key
+```
+
 ### Server
 
 The server is hosted on a local machine. Its purpose is to host Docker
