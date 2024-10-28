@@ -1,5 +1,6 @@
 FROM debian:bookworm-20241016-slim
 ARG ANSIBLE_VERSION=10.5.0
+ARG OPENSSH_CLIENT_VERSION=1:9.2p1-2+deb12u3
 ARG PYTHON_LIB_NETADDR_VERSION=1.3.0
 ARG PYTHON_VERSION=3.11.2-1+b1
 
@@ -7,6 +8,7 @@ RUN <<EOF
   set -ex
   apt-get update
   apt-get install -y \
+    openssh-client=$OPENSSH_CLIENT_VERSION \
     python3=$PYTHON_VERSION \
     python3-venv=$PYTHON_VERSION
   rm -rf /var/lib/apt/lists/*

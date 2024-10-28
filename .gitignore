@@ -1,2 +1,5 @@
+# For known_hosts file.
+/ansible_data/.ssh/
+
 /secrets/*
 !/secrets/*.example

@@ -19,7 +19,7 @@ secrets:
     file: ./secrets/gateway_ssh_key_public
 
 services:
-  ansible_gateway_provisioner:
+  ansible_gateway_provision:
     build:
       context: ./ansible_container
     command: ["provision"]
@@ -32,3 +32,6 @@ services:
       - gateway_instance_label
       - gateway_ssh_key_name
       - gateway_ssh_key_public
+    volumes:
+      # To generate the known_hosts file used by the setup playbook.
+      - ./ansible_data/.ssh:/home/ansible/.ssh

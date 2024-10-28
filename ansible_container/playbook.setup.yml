@@ -1,0 +1,21 @@
+- name: Filter hosts by gateway instance label.
+  hosts: all
+  gather_facts: false
+  run_once: true
+  vars:
+    instance_label: '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_instance_label") }}'
+  tasks:
+    - name: Add hosts to group matching gateway instance label.
+      ansible.builtin.add_host:
+        name: '{{ item }}'
+        groups: gateways
+      loop: '{{ ansible_play_hosts }}'
+      when: item == instance_label
+
+- name: Setup gateway instance.
+  hosts: gateways
+  tasks:
+    - ansible.builtin.debug:
+        var: ansible_facts
+    - ansible.builtin.debug:
+        var: vultr_label

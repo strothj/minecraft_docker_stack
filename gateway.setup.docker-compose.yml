@@ -1,0 +1,25 @@
+name: mds_gateway_setup
+
+secrets:
+  cloud_provider:
+    file: ./secrets/cloud_provider
+  cloud_provider_api_key:
+    file: ./secrets/cloud_provider_api_key
+  gateway_instance_label:
+    file: ./secrets/gateway_instance_label
+  gateway_ssh_key:
+    file: ./secrets/gateway_ssh_key
+
+services:
+  ansible_gateway_setup:
+    build:
+      context: ./ansible_container
+    command: ["setup"]
+    secrets:
+      - cloud_provider
+      - cloud_provider_api_key
+      - gateway_instance_label
+      - gateway_ssh_key
+    volumes:
+      # For access to the known_hosts file.
+      - ./ansible_data/.ssh:/home/ansible/.ssh:ro

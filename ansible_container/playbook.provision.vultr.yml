@@ -206,3 +206,6 @@
         host: "{{ cloud_instance_response.vultr_instance.main_ip }}"
         port: 22
         sleep: 5
+
+    - name: Write key to known_hosts.
+      shell: "ssh-keyscan -H {{ cloud_instance_response.vultr_instance.main_ip }} > /home/ansible/.ssh/known_hosts"
