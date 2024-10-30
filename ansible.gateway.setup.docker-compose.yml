@@ -29,3 +29,5 @@ services:
     volumes:
       # For access to the known_hosts file.
       - ./ansible_data/.ssh:/home/ansible/.ssh:ro
+      # For tunnel_client's generated SSH keys and populated known_hosts file.
+      - ./tunnel_client_data:/tunnel_client_data
