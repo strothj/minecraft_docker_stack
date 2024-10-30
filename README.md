@@ -23,6 +23,15 @@ Host 123.123.123.123
   IdentityFile ~/code/minecraft_docker_stack/secrets/gateway_ssh_key
 ```
 
+#### Ports
+
+| Port  | Allowed Sources      | Description                                                                                   |
+| ----- | -------------------- | --------------------------------------------------------------------------------------------- |
+| 22    | Ansible control node | Allows Ansible to administer the gateway                                                      |
+| 1022  | Server               | SSH container which allows remote port forwards. Exposes the Minecraft ports 25564 and 26665. |
+| 25564 | Any                  | Port forwarded to server for the Minecraft staging server                                     |
+| 25565 | Any                  | Port forwarded to server for the Minecraft production server                                  |
+
 ### Server
 
 The server is hosted on a local machine. Its purpose is to host Docker

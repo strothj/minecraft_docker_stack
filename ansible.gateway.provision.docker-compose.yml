@@ -17,6 +17,8 @@ secrets:
     file: ./secrets/gateway_ssh_key_name
   gateway_ssh_key_public:
     file: ./secrets/gateway_ssh_key_public
+  server_ips:
+    file: ./secrets/server_ips
 
 services:
   ansible_gateway_provision:
@@ -32,6 +34,7 @@ services:
       - gateway_instance_label
       - gateway_ssh_key_name
       - gateway_ssh_key_public
+      - server_ips
     volumes:
       # To generate the known_hosts file used by the setup playbook.
       - ./ansible_data/.ssh:/home/ansible/.ssh

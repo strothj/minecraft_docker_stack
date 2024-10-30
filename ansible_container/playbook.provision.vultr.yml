@@ -20,6 +20,7 @@
     api_key:                    '{{ lookup("ansible.builtin.file", "/run/secrets/cloud_provider_api_key") }}'
     control_node_ips:           '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_control_node_ips") }}'
     firewall_group_description: '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_firewall_group_description") }}'
+    server_ips:                 '{{ lookup("ansible.builtin.file", "/run/secrets/server_ips") }}'
   tasks:
     #region Firewall Group
     - name: Provision firewall group if it is missing
@@ -30,13 +31,13 @@
     #endregion Firewall Group
 
     #region Firewall Rules
-    - name: Generate firewall rules for control nodes
+    - name: Generate firewall rules for control node only connections
       ansible.builtin.set_fact:
         firewall_rules_control_nodes: >-
           {{
             firewall_rules_control_nodes | default([]) +
             [{
-              "ip_type": item | ansible.utils.ipv4 | ansible.builtin.ternary('v4', 'v6'),
+              "ip_type": item | ansible.utils.ipv4 | ansible.builtin.ternary("v4", "v6"),
               "notes": "Allow SSH access from control node.",
               "port": "22",
               "subnet": item | ansible.utils.ipaddr("network"),
@@ -50,12 +51,31 @@
         msg: No valid control node IPs provided.
       when: firewall_rules_control_nodes | length == 0
 
-    - name: Generate remaining firewall rules
+    - name: Generate firewall rules for server only connections
       ansible.builtin.set_fact:
-        firewall_rules: >-
+        firewall_rules_server: >-
           {{
-            firewall_rules |
-            default(firewall_rules_control_nodes) +
+            firewall_rules_server | default([]) +
+            [{
+              "ip_type": item | ansible.utils.ipv4 | ansible.builtin.ternary("v4", "v6"),
+              "notes": "Allow SSH tunnel client from server.",
+              "port": "1022",
+              "subnet": item | ansible.utils.ipaddr("network"),
+              "subnet_size": item | ansible.utils.ipaddr("prefix")
+            }]
+          }}
+      loop: '{{ server_ips.splitlines() | ansible.utils.ipaddr }}'
+
+    - name: Fail if no valid firewall rules were generated for server only connections
+      ansible.builtin.fail:
+        msg: No valid server IPs provided.
+      when: firewall_rules_server | length == 0
+
+    - name: Generate firewall rules for public connections
+      ansible.builtin.set_fact:
+        firewall_rules_public: >-
+          {{
+            firewall_rules_public | default([]) +
             [{
               "ip_type": item[0],
               "notes": "Allow access to Minecraft %s server." | format(item[1]),
@@ -65,6 +85,15 @@
             }]
           }}
       loop: '{{ ["v4", "v6"] | product(["staging", "production"]) }}'
+
+    - name: Combine all firewall rules
+      ansible.builtin.set_fact:
+        firewall_rules: >-
+          {{
+            firewall_rules_control_nodes +
+            firewall_rules_server +
+            firewall_rules_public
+          }}
 
     - name: Display firewall rules
       debug:
