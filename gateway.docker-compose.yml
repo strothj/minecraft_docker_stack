@@ -1,13 +1,18 @@
 name: mds_gateway
 
+networks:
+  tunnel:
+
 services:
   tunnel_host:
     build:
       context: ./tunnel_host_container
+    networks:
+      - tunnel
     ports:
       - "1022:1022"
-      - "25564:25564"
-      - "25565:25565"
+      - "127.0.0.1:25562:25562"
+      - "127.0.0.1:25563:25563"
+    restart: unless-stopped
     volumes:
       - /opt/tunnel_host:/home/tunnel/.ssh
-    restart: unless-stopped

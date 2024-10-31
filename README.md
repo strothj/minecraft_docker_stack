@@ -29,8 +29,15 @@ Host 123.123.123.123
 | ----- | -------------------- | --------------------------------------------------------------------------------------------- |
 | 22    | Ansible control node | Allows Ansible to administer the gateway                                                      |
 | 1022  | Server               | SSH container which allows remote port forwards. Exposes the Minecraft ports 25564 and 26665. |
-| 25564 | Any                  | Port forwarded to server for the Minecraft staging server                                     |
-| 25565 | Any                  | Port forwarded to server for the Minecraft production server                                  |
+| 25562 | 127.0.0.1            | Reverse port forward to server for the Minecraft staging server                               |
+| 25563 | 127.0.0.1            | Reverse port forward to server for the Minecraft production server                            |
+| 25564 | Any                  | Caddy proxy to 25562 using Proxy Protocol V2 to Minecraft staging server                      |
+| 25565 | Any                  | Caddy proxy to 25563 using Proxy Protocol V2 to Minecraft production server                   |
+
+Note: Caddy is used to proxy incoming Minecraft TCP connections to the Minecraft
+ports. This is done using Proxy Protocol V2 so that source IP addresses are sent
+along with the connection for use in the Minecraft authentication plugin
+(AuthMeReloaded).
 
 ### Server
 
