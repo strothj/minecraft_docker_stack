@@ -6,3 +6,6 @@
 
 - name: Include tasks to provision firewall group
   ansible.builtin.include_tasks: '{{ "provision_firewall_group_" + gateway_provider.name + ".yml" }}'
+
+- name: Include tasks to provision firewall rules
+  ansible.builtin.include_tasks: '{{ "provision_firewall_rules_" + gateway_provider.name + ".yml" }}'

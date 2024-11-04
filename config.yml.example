@@ -1,4 +1,14 @@
+control_node_ips:
+  - 111.111.111.111/32
+  - 222.222.222.222/32
+  - 1111:1111:1111:1111::0/64
+  - 2222:2222:2222:2222::0/64
 gateway_provider:
   name: vultr
   vultr_api_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 gateway_ssh_key_name: Minecraft Docker Stack Gateway
+server_ips:
+  - 111.111.111.111/32
+  - 222.222.222.222/32
+  - 1111:1111:1111:1111::0/64
+  - 2222:2222:2222:2222::0/64

@@ -1,0 +1,53 @@
+{% set rules = [
+  {
+    "notes": "Allow SSH access from control nodes.",
+    "port": "22",
+    "ip_addresses": control_node_ips
+  },
+  {
+    "notes": "Allow SSH tunnel client from server.",
+    "port": "1022",
+    "ip_addresses": server_ips
+  },
+  {
+    "notes": "Allow access to Minecraft staging server.",
+    "port": "25564",
+    "ip_addresses": ["0.0.0.0", "::"]
+  },
+  {
+    "notes": "Allow access to Minecraft production server.",
+    "port": "25565",
+    "ip_addresses": ["0.0.0.0", "::"]
+  }
+] %}
+
+{#
+  Returns the subnet size for the given IP address.
+
+  We wrap the ansible.utils.ipaddr filter so that it returns a length of 0 for
+  0.0.0.0 and ::, rather than 32 and 128 respectively. The correct value should
+  be 0 according to specifications and is what is returned by Vultr.
+
+  This needs to be consistent so that undesired firewall rules can be properly
+  recognized for removal later.
+#}
+{% macro get_subnet_size(ip_address) -%}
+{{
+  (ip_address == '0.0.0.0' or ip_address == '::') |
+  ansible.builtin.ternary(0, ip_address | ansible.utils.ipaddr('prefix'))
+}}
+{%- endmacro %}
+
+[
+{% for rule in rules %}
+  {% for ip_address in rule.ip_addresses %}
+  {
+    "ip_type": "{{ ip_address | ansible.utils.ipv4 | ansible.builtin.ternary('v4', 'v6') }}",
+    "notes": "{{ rule.notes }}",
+    "port": "{{ rule.port }}",
+    "subnet": "{{ ip_address | ansible.utils.ipaddr('network') }}",
+    "subnet_size": {{ get_subnet_size(ip_address) }}
+  },
+  {% endfor %}
+{% endfor %}
+]

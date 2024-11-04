@@ -1,0 +1,64 @@
+- name: Generate firewall rules
+  ansible.builtin.set_fact:
+    firewall_rules: >-
+      {{
+        lookup("ansible.builtin.template", "firewall_rules_vultr.j2") |
+        ansible.builtin.from_yaml
+      }}
+
+- name: Display generated firewall rules
+  ansible.builtin.debug:
+    var: firewall_rules
+
+- name: Retrieve existing firewall rules
+  vultr.cloud.firewall_rule_info:
+    api_key: '{{ gateway_provider.vultr_api_key }}'
+    group: '{{ gateway_firewall_group_name }}'
+  register: firewall_rules_info_response
+
+- name: Display existing firewall rules
+  ansible.builtin.debug:
+    var: firewall_rules_info_response
+
+- name: Generate undesired firewall rules
+  ansible.builtin.set_fact:
+    firewall_rules_undesired: >-
+      {{
+        lookup("ansible.builtin.template", "firewall_rules_undesired_vultr.j2") |
+        ansible.builtin.from_yaml
+      }}
+
+- name: Display undesired firewall rules
+  ansible.builtin.debug:
+    var: firewall_rules_undesired
+
+- name: Remove undesired firewall rules
+  vultr.cloud.firewall_rule:
+    api_key: '{{ gateway_provider.vultr_api_key }}'
+    group: '{{ gateway_firewall_group_name }}'
+    ip_type: '{{ rule.ip_type }}'
+    notes: '{{ rule.notes }}'
+    port: '{{ rule.port }}'
+    protocol: '{{ rule.protocol }}'
+    source: '{{ (rule.source | length > 0) | ansible.builtin.ternary(rule.source, omit) }}'
+    state: absent
+    subnet_size: '{{ (rule.source | length == 0) | ansible.builtin.ternary(rule.subnet_size, omit) }}'
+    subnet: '{{ (rule.source | length == 0) | ansible.builtin.ternary(rule.subnet, omit) }}'
+  loop: '{{ firewall_rules_undesired }}'
+  loop_control:
+    loop_var: rule
+
+- name: Add firewall rules
+  vultr.cloud.firewall_rule:
+    api_key: '{{ gateway_provider.vultr_api_key }}'
+    group: '{{ gateway_firewall_group_name }}'
+    ip_type: '{{ rule.ip_type }}'
+    notes: '{{ rule.notes }}'
+    port: '{{ rule.port }}'
+    protocol: tcp
+    state: present
+    subnet_size: '{{ rule.subnet_size }}'
+    subnet: '{{ rule.subnet }}'
+  loop: '{{ firewall_rules }}'
+  loop_control:
+    loop_var: rule

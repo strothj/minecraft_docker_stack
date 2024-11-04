@@ -1,8 +1,14 @@
 argument_specs:
   main:
     options:
+      control_node_ips:
+        elements: str
+        required: true
+        short_description: The IP addresses, IPv4 and IPv6, of the Ansible control node(s).
+        type: list
       gateway_firewall_group_name:
         short_description: Unique identifier for the gateway's firewall group on the cloud provider.
+        required: true
         type: str
       gateway_provider:
         options:
@@ -43,3 +49,8 @@ argument_specs:
           Things like generated SSH keys will be written here.
         short_description: The path to a folder to write local secrets.
         type: path
+      server_ips:
+        elements: str
+        required: true
+        short_description: The IPs, IPv4 and IPv6, of the server node.
+        type: list
