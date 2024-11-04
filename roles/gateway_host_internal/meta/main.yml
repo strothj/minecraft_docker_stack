@@ -1,0 +1,38 @@
+argument_specs:
+  main:
+    options:
+      gateway_provider:
+        options:
+          name:
+            choices:
+              - vultr
+            required: true
+            type: str
+          vultr_api_key:
+            type: str
+        required_if:
+          - ['name', 'vultr', ['vultr_api_key']]
+        required: true
+        short_description: The cloud provider to use to host the gateway server.
+        type: dict
+      gateway_ssh_key_name:
+        required: true
+        short_description: The name of the gateway SSH key on the cloud provider.
+        type: str
+      gateway_ssh_key_path:
+        default: '{{ secrets_folder }}/gateway_ssh_key'
+        description: >-
+          The path to save the gateway SSH key.
+
+          This is the path to the private key. Its containing folder will be
+          created to hold this key and its associated public key.
+        short_description: The path to save the gateway SSH key.
+        type: path
+      secrets_folder:
+        default: '{{ playbook_dir }}/secrets'
+        description: >-
+          The path to a folder to write local secrets.
+
+          Things like generated SSH keys will be written here.
+        short_description: The path to a folder to write local secrets.
+        type: path

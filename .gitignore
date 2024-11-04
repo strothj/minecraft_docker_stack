@@ -1,3 +1,9 @@
+/.venv/
+/secrets2/
+
+/.envrc
+/config.yml
+
 # For known_hosts file.
 /ansible_data/
 

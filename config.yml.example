@@ -1,0 +1,4 @@
+gateway_provider:
+  name: vultr
+  vultr_api_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+gateway_ssh_key_name: Minecraft Docker Stack Gateway

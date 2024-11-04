@@ -1,0 +1,6 @@
+- name: Provision SSH key
+  vultr.cloud.ssh_key:
+    api_key: '{{ gateway_provider.vultr_api_key }}'
+    name: '{{ gateway_ssh_key_name }}'
+    ssh_key: '{{ gateway_ssh_key_public }}'
+    state: present

@@ -1,18 +1,3 @@
-- name: Provision gateway SSH key
-  hosts: localhost
-  gather_facts: false
-  vars:
-    api_key:      '{{ lookup("ansible.builtin.file", "/run/secrets/cloud_provider_api_key") }}'
-    ssh_key:      '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_ssh_key_public") }}'
-    ssh_key_name: '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_ssh_key_name") }}'
-  tasks:
-    - name: Provision SSH key
-      vultr.cloud.ssh_key:
-        api_key: '{{ api_key }}'
-        name: '{{ ssh_key_name }}'
-        ssh_key: '{{ ssh_key }}'
-        state: present
-
 - name: Provision gateway firewall
   hosts: localhost
   gather_facts: false

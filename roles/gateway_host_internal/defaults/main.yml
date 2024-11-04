@@ -1,0 +1,2 @@
+gateway_ssh_key_path: '{{ secrets_folder }}/gateway_ssh_key'
+secrets_folder: '{{ playbook_dir }}/secrets2'

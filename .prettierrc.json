@@ -1,0 +1,11 @@
+{
+  "experimentalTernaries": true,
+  "overrides": [
+    {
+      "files": "*.yml",
+      "options": {
+        "singleQuote": true
+      }
+    }
+  ]
+}
