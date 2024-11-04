@@ -10,7 +10,7 @@
 - name: Create SSH key pair
   community.crypto.openssh_keypair:
     backend: opensshbin
-    comment: Gateway
+    comment: '{{ gateway_ssh_key_comment }}'
     path: '{{ gateway_ssh_key_path }}'
     state: present
     type: ed25519

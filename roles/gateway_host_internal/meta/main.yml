@@ -15,6 +15,10 @@ argument_specs:
         required: true
         short_description: The cloud provider to use to host the gateway server.
         type: dict
+      gateway_ssh_key_comment:
+        default: Minecraft Docker Stack Gateway
+        short_description: The comment argument provided to the SSH key command.
+        type: str
       gateway_ssh_key_name:
         required: true
         short_description: The name of the gateway SSH key on the cloud provider.
