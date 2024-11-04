@@ -1,0 +1,5 @@
+- name: Provision firewall group
+  vultr.cloud.firewall_group:
+    api_key: '{{ gateway_provider.vultr_api_key }}'
+    description: '{{ gateway_firewall_group_name }}'
+    state: present

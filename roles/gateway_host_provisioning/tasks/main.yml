@@ -1,5 +1,8 @@
 - name: Include tasks for creating SSH key
   ansible.builtin.include_tasks: create_ssh_key.yml
 
-- name: Provision SSH key
+- name: Include tasks to provision SSH key
   ansible.builtin.include_tasks: '{{ "provision_ssh_key_" + gateway_provider.name + ".yml" }}'
+
+- name: Include tasks to provision firewall group
+  ansible.builtin.include_tasks: '{{ "provision_firewall_group_" + gateway_provider.name + ".yml" }}'

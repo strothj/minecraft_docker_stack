@@ -1,6 +1,9 @@
 argument_specs:
   main:
     options:
+      gateway_firewall_group_name:
+        short_description: Unique identifier for the gateway's firewall group on the cloud provider.
+        type: str
       gateway_provider:
         options:
           name:

@@ -7,14 +7,6 @@
     firewall_group_description: '{{ lookup("ansible.builtin.file", "/run/secrets/gateway_firewall_group_description") }}'
     server_ips:                 '{{ lookup("ansible.builtin.file", "/run/secrets/server_ips") }}'
   tasks:
-    #region Firewall Group
-    - name: Provision firewall group if it is missing
-      vultr.cloud.firewall_group:
-        api_key: '{{ api_key }}'
-        description: '{{ firewall_group_description }}'
-        state: present
-    #endregion Firewall Group
-
     #region Firewall Rules
     - name: Generate firewall rules for control node only connections
       ansible.builtin.set_fact:
