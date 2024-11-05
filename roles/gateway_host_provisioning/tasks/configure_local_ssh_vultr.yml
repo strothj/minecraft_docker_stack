@@ -49,3 +49,10 @@
     name: '{{ gateway_ip_address }}'
     state: present
   when: keyscan_result is not skipped
+
+- name: Add key to user .ssh/config
+  community.general.ssh_config:
+    host: '{{ gateway_ip_address }}'
+    identity_file: '{{ gateway_ssh_key_path }}'
+    remote_user: root
+    user: '{{ ansible_user_id }}'
