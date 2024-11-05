@@ -10,6 +10,18 @@ argument_specs:
         short_description: Unique identifier for the gateway's firewall group on the cloud provider.
         required: true
         type: str
+      gateway_hostname:
+        short_description: The fully qualified domain name (FQDN) of the gateway.
+        required: true
+        type: str
+      gateway_instance_name:
+        short_description: The unique instance name for identifying the gateway on the cloud provider.
+        required: true
+        type: str
+      gateway_instance_region:
+        short_description: Region to provision gateway instance.
+        required: true
+        type: str
       gateway_provider:
         options:
           name:
@@ -18,6 +30,7 @@ argument_specs:
             required: true
             type: str
           vultr_api_key:
+            short_description: Vultr API key, generated in Vultr dashboard.
             type: str
         required_if:
           - ['name', 'vultr', ['vultr_api_key']]

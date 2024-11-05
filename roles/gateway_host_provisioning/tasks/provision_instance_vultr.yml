@@ -1,0 +1,29 @@
+- name: Provision instance
+  vultr.cloud.instance:
+    api_key: '{{ gateway_provider.vultr_api_key }}'
+    backups: false
+    ddos_protection: false
+    enable_ipv6: true
+    firewall_group: '{{ gateway_firewall_group_name }}'
+    hostname: '{{ gateway_hostname }}'
+    label: '{{ gateway_instance_name }}'
+    os: Debian 12 x64 (bookworm)
+    plan: vc2-1c-1gb
+    region: '{{ gateway_instance_region }}'
+    ssh_keys: ['{{ gateway_ssh_key_name }}']
+    state: started
+  register: instance_response
+
+- name: Set fact for IP
+  ansible.builtin.set_fact:
+    gateway_ip_address: '{{ instance_response.vultr_instance.main_ip }}'
+
+- name: Print main IP
+  ansible.builtin.debug:
+    var: gateway_ip_address
+
+- name: Wait for SSH to come up
+  ansible.builtin.wait_for:
+    host: '{{ gateway_ip_address }}'
+    port: 22
+    sleep: 5

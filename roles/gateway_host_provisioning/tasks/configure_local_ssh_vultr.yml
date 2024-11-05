@@ -1,0 +1,23 @@
+- name: Get instance info
+  vultr.cloud.instance_info:
+    api_key: '{{ gateway_provider.vultr_api_key }}'
+    label: '{{ gateway_instance_name }}'
+    region: '{{ gateway_instance_region }}'
+  register: instance_info_response
+  when: gateway_ip_address is not defined
+
+- name: Set fact main IP
+  ansible.builtin.set_fact:
+    gateway_ip_address: '{{ instance_info_response.vultr_instance_info[0].main_ip }}'
+  when: instance_info_response.vultr_instance_info is defined
+
+- name: Load SSH public key
+  ansible.builtin.set_fact:
+    gateway_ssh_key_public: '{{ lookup("ansible.builtin.file", gateway_ssh_key_path + ".pub") }}'
+  when: gateway_ssh_key_public is not defined
+
+- name: Add to known_hosts file
+  ansible.builtin.known_hosts:
+    key: '{{ [gateway_ip_address, gateway_ssh_key_public, gateway_ssh_key_name] | join(" ") }}'
+    name: '{{ gateway_ip_address }}'
+    state: present

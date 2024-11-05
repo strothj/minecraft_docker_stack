@@ -3,6 +3,9 @@ control_node_ips:
   - 222.222.222.222/32
   - 1111:1111:1111:1111::0/64
   - 2222:2222:2222:2222::0/64
+gateway_hostname: minecraft.example.com
+gateway_instance_name: Minecraft Docker Stack Gateway
+gateway_instance_region: atl
 gateway_provider:
   name: vultr
   vultr_api_key: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
