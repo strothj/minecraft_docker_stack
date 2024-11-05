@@ -11,13 +11,41 @@
     gateway_ip_address: '{{ instance_info_response.vultr_instance_info[0].main_ip }}'
   when: instance_info_response.vultr_instance_info is defined
 
-- name: Load SSH public key
-  ansible.builtin.set_fact:
-    gateway_ssh_key_public: '{{ lookup("ansible.builtin.file", gateway_ssh_key_path + ".pub") }}'
-  when: gateway_ssh_key_public is not defined
+- name: Gather facts
+  ansible.builtin.gather_facts:
+  when: ansible_user_dir is not defined
 
-- name: Add to known_hosts file
+- name: Set fact for known_hosts file path
+  ansible.builtin.set_fact:
+    known_hosts_path: '{{ ansible_user_dir + "/.ssh/known_hosts" }}'
+
+- name: Stat known_hosts file
+  ansible.builtin.stat:
+    path: '{{ known_hosts_path }}'
+  register: stat_known_hosts_result
+
+- name: Read known_hosts file
+  ansible.builtin.command:
+    cmd: 'cat {{ known_hosts_path }}'
+  changed_when: false
+  register: cat_known_hosts_result
+  when: stat_known_hosts_result.stat.exists
+
+- name: Scan gateway public key
+  ansible.builtin.command:
+    cmd: 'ssh-keyscan -t ed25519 {{ gateway_ip_address }}'
+  register: keyscan_result
+  when: >-
+    cat_known_hosts_result is skipped or
+    (
+      cat_known_hosts_result.stdout |
+      ansible.builtin.regex_search("^" + (gateway_ip_address | replace(".", "\.")) + " ssh-ed25519 .+", multiline=True)
+      is not string
+    )
+
+- name: Add gateway public key to known_hosts file
   ansible.builtin.known_hosts:
-    key: '{{ [gateway_ip_address, gateway_ssh_key_public, gateway_ssh_key_name] | join(" ") }}'
+    key: '{{ keyscan_result.stdout }}'
     name: '{{ gateway_ip_address }}'
     state: present
+  when: keyscan_result is not skipped
