@@ -2,6 +2,6 @@
   hosts: localhost
   gather_facts: false
   roles:
-    - role: gateway_host_provisioning
+    - gateway_host_provisioning
   vars_files:
     - config.yml
