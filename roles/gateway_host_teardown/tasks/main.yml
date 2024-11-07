@@ -1,0 +1,2 @@
+- name: Import tasks to tear down
+  ansible.builtin.import_tasks: '{{ "tear_down_" + gateway_provider.name + ".yml" }}'

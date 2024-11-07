@@ -55,4 +55,5 @@
     host: '{{ gateway_ip_address }}'
     identity_file: '{{ gateway_ssh_key_path }}'
     remote_user: root
+    state: present
     user: '{{ ansible_user_id }}'

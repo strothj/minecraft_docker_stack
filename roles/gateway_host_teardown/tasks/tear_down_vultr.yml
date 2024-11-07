@@ -1,0 +1,59 @@
+- name: Get instance info
+  vultr.cloud.instance_info:
+    api_key: '{{ gateway_provider.vultr_api_key }}'
+    label: '{{ gateway_instance_name }}'
+    region: '{{ gateway_instance_region }}'
+  register: instance_info_response
+  when: gateway_ip_address is not defined
+
+- name: Set fact for ip address
+  ansible.builtin.set_fact:
+    gateway_ip_address: '{{ instance_info_response.vultr_instance_info[0].main_ip }}'
+  when: >-
+    instance_info_response.vultr_instance_info is defined and
+    instance_info_response.vultr_instance_info | length > 0
+
+- name: Remove SSH key from user .ssh/config
+  block:
+    - name: Gather facts
+      ansible.builtin.gather_facts:
+      when: ansible_user_id is not defined
+
+    - name: Remove SSH key from user .ssh/config
+      community.general.ssh_config:
+        host: '{{ gateway_ip_address }}'
+        state: absent
+        user: '{{ ansible_user_id }}'
+
+    - name: Remove from known_hosts file
+      ansible.builtin.known_hosts:
+        name: '{{ gateway_ip_address }}'
+        state: absent
+  when: gateway_ip_address is defined
+
+- name: Destroy instance
+  vultr.cloud.instance:
+    api_key: '{{ gateway_provider.vultr_api_key }}'
+    label: '{{ gateway_instance_name }}'
+    region: '{{ gateway_instance_region }}'
+    state: absent
+
+- name: Destroy firewall group
+  vultr.cloud.firewall_group:
+    api_key: '{{ gateway_provider.vultr_api_key }}'
+    description: '{{ gateway_firewall_group_name }}'
+    state: absent
+
+- name: Destroy SSH key
+  vultr.cloud.ssh_key:
+    api_key: '{{ gateway_provider.vultr_api_key }}'
+    name: '{{ gateway_ssh_key_name }}'
+    state: absent
+
+- name: Delete generated SSH key
+  ansible.builtin.file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '{{ gateway_ssh_key_path }}'
+    - '{{ gateway_ssh_key_path }}.pub'
