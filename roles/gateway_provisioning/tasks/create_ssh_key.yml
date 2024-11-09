@@ -1,3 +1,6 @@
+- debug:
+    var: test
+
 - name: Print SSH key path
   ansible.builtin.debug:
     var: gateway_ssh_key_path

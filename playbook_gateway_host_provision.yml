@@ -1,7 +1,0 @@
-- name: Provision gateway host
-  hosts: localhost
-  gather_facts: false
-  roles:
-    - gateway_host_provisioning
-  vars_files:
-    - config.yml

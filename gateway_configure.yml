@@ -1,0 +1,6 @@
+- name: Configure gateway
+  hosts: 'gateways_{{ gateway_provider.name }}'
+  roles:
+    - gateway_configuration
+  vars_files:
+    - config.yml

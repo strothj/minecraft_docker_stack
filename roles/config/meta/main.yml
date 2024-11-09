@@ -67,3 +67,7 @@ argument_specs:
         required: true
         short_description: The IPs, IPv4 and IPv6, of the server node.
         type: list
+      timezone:
+        required: true
+        short_description: 'The Linux timezone. Example: America/New_York'
+        type: str

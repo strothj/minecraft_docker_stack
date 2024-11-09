@@ -1,0 +1,6 @@
+plugin: vultr.cloud.vultr
+api_key: '{{ (lookup("ansible.builtin.file", "config.yml") | ansible.builtin.from_yaml).gateway_provider.vultr_api_key }}'
+compose:
+  ansible_host: vultr_main_ip
+groups:
+  gateways_vultr: vultr_label == (lookup("ansible.builtin.file", "config.yml") | ansible.builtin.from_yaml).gateway_instance_name

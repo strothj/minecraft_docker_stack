@@ -1,0 +1,7 @@
+- name: Tear down gateway
+  hosts: control_nodes
+  gather_facts: false
+  roles:
+    - gateway_teardown
+  vars_files:
+    - config.yml

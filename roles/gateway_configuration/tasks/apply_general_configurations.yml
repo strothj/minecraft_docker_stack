@@ -1,0 +1,17 @@
+- name: Print IP address
+  debug:
+    var: ansible_host
+
+- name: Set timezone
+  community.general.timezone:
+    name: '{{ timezone }}'
+  notify: Restart CRON
+
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: '{{ gateway_hostname }}'
+
+- name: Set global Bash alias "ll"
+  ansible.builtin.lineinfile:
+    path: /etc/bash.bashrc
+    line: "alias ll='ls -l'"

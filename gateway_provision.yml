@@ -1,0 +1,7 @@
+- name: Provision gateway
+  hosts: control_nodes
+  gather_facts: false
+  roles:
+    - gateway_provisioning
+  vars_files:
+    - config.yml

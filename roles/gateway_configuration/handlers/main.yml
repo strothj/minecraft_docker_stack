@@ -1,0 +1,9 @@
+- name: Restart CRON
+  ansible.builtin.systemd:
+    name: cron
+    state: restarted
+
+- name: Restart Docker
+  ansible.builtin.systemd:
+    name: docker
+    state: restarted

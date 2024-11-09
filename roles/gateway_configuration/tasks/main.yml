@@ -1,0 +1,9 @@
+- name: Import tasks for general configurations
+  ansible.builtin.import_tasks: apply_general_configurations.yml
+
+- name: Import tasks for installing Docker
+  ansible.builtin.import_tasks: install_docker.yml
+
+- name: Configure Docker
+  ansible.builtin.import_tasks: configure_docker.yml
+  tags: configure_docker

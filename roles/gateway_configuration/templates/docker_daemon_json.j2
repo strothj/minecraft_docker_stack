@@ -1,0 +1,26 @@
+{#
+https://en.wikipedia.org/wiki/Unique_local_address
+fd00:0000:0000                          Unique Local Address (ULA) Global ID (48 bits)
+fd00:0000:0000:00                       Fixed CIDR (56 bits)
+fd00:0000:0000:01                       Pool (56 bits)
+____:____:____:____:____:____:____:____
+#}
+{
+  "default-address-pools": [
+    { "base": "172.17.0.0/16", "size": 16 },
+    { "base": "172.18.0.0/16", "size": 16 },
+    { "base": "172.19.0.0/16", "size": 16 },
+    { "base": "172.20.0.0/14", "size": 16 },
+    { "base": "172.24.0.0/14", "size": 16 },
+    { "base": "172.28.0.0/14", "size": 16 },
+    { "base": "192.168.0.0/16", "size": 20 },
+    { "base": "fd00:0000:0000:0100::/56", "size": 64 }
+  ],
+  "fixed-cidr-v6": "fd00::/64",
+  "ipv6": true,
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-file": "3",
+    "max-size": "10m"
+  }
+}
