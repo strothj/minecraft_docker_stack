@@ -4,6 +4,10 @@
 - name: Import tasks for installing Docker
   ansible.builtin.import_tasks: install_docker.yml
 
-- name: Configure Docker
+- name: Import tasks for configuring Docker
   ansible.builtin.import_tasks: configure_docker.yml
   tags: configure_docker
+
+- name: Import tasks for deploying Docker services
+  ansible.builtin.import_tasks: deploy_docker_services.yml
+  tags: deploy_docker_services

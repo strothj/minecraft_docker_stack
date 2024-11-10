@@ -1,6 +1,10 @@
-- name: Print IP address
+- name: Print IPv4 address
   debug:
     var: ansible_host
+
+- name: Print IPv6 address
+  debug:
+    var: ansible_default_ipv6.address
 
 - name: Set timezone
   community.general.timezone:

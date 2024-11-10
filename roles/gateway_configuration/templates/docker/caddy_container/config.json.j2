@@ -1,0 +1,46 @@
+{
+  "admin": {
+    "config": {
+      "persist": true
+    }
+  },
+
+  "apps": {
+    "http": {
+      "servers": {
+        {% for environment in ["staging", "production"] %}
+        {% set port = (environment == "staging") | ansible.builtin.ternary("25564", "25565") %}
+        "minecraft_{{ environment }}": {
+          "automatic_https": {
+            "disable": true
+          },
+          "listen": ["0.0.0.0:{{ port }}", "[::]:{{ port }}"],
+          "logs": {},
+          "routes": [
+            {
+              "group": "Authorized",
+              "handle": [
+                {
+                  "body": "Hello world! ({{ environment }})",
+                  "handler": "static_response"
+                }
+              ],
+              "match": [{}]
+            }
+          ]
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      }
+    }
+  },
+
+  "logging": {
+    "logs": {
+      "default": {
+        "encoder": {
+          "format": "console"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+name: mds_gateway
+
+networks:
+  tunnel:
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: {{ docker_ipv6_network_subnet_tunnel }}
+
+services:
+  caddy:
+    build:
+      context: ./caddy_container
+    networks:
+      - tunnel
+    ports:
+      - "25564:25564"
+      - "25565:25565"
+    volumes:
+      - /opt/docker/caddy_config:/config
+      - /opt/docker/caddy_data:/data

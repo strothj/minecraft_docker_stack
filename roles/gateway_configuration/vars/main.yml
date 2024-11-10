@@ -1,0 +1,16 @@
+# https://docs.docker.com/engine/daemon/ipv6/
+# https://github.com/docker/docs/issues/17312#issuecomment-1736446266
+#
+# https://en.wikipedia.org/wiki/Unique_local_address
+# fd00:0000:0000                          Unique Local Address (ULA) Global ID (48 bits)
+# fd00:0000:0000:00                       Fixed CIDR Subnet Parent (56 bits)
+# fd00:0000:0000:0000                     Fixed CIDR Subnet (64 bits)
+# fd00:0000:0000:01                       Default Pool (56 bits)
+# fd00:0000:0000:02                       Compose Subnet (56 bits)
+# fd00:0000:0000:0200                     Compose Subnet - network: tunnel - (64 bits)
+# ____:____:____:____:____:____:____:____
+
+docker_ipv6_default_pool_base: fd00:0000:0000:0100::/56
+docker_ipv6_default_pool_size: 64
+docker_ipv6_fixed_cidr_v6: fd00::/64
+docker_ipv6_network_subnet_tunnel: fd00:0000:0000:0200::/64

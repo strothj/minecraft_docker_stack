@@ -1,0 +1,28 @@
+- name: Copy Docker Compose files
+  ansible.builtin.copy:
+    dest: /opt/docker
+    directory_mode: '700'
+    group: root
+    mode: '400'
+    owner: root
+    src: docker/
+
+- name: Copy templates Docker Compose files
+  ansible.builtin.template:
+    dest: '/opt/docker/{{ item }}'
+    group: root
+    lstrip_blocks: true
+    mode: '400'
+    owner: root
+    src: 'docker/{{ item }}.j2'
+    trim_blocks: true
+  loop:
+    - caddy_container/config.json
+    - docker-compose.yml
+
+- name: Bring up Docker Compose
+  community.docker.docker_compose_v2:
+    build: always
+    project_src: /opt/docker
+    remove_orphans: true
+    state: present

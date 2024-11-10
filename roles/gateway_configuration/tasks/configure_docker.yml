@@ -6,14 +6,29 @@
 # - Set logging driver to json logger.
 # - Enable automatic log rotation.
 # - Enable IPv6.
+#
 # https://docs.docker.com/engine/install/linux-postinstall/#configure-default-logging-driver
 # https://docs.docker.com/engine/logging/drivers/json-file/
 # https://docs.docker.com/engine/daemon/ipv6/
+# https://github.com/docker/docs/issues/17312#issuecomment-1736446266
 - name: Write Docker daemon.json
-  ansible.builtin.template:
+  ansible.builtin.copy:
+    content: >-
+      {{
+        lookup("ansible.builtin.template", "daemon.json.j2") |
+        ansible.builtin.to_nice_json
+      }}
     dest: /etc/docker/daemon.json
+    directory_mode: '775'
     group: root
-    mode: '400'
+    mode: '444'
     owner: root
-    src: docker_daemon_json.j2
-  notify: Restart Docker
+  register: write_daemon_json_result
+
+# Force Docker service restart now because settings changes need to be applied
+# before Docker Compose services come up, in case of network changes.
+- name: Start Docker service
+  ansible.builtin.systemd:
+    name: docker
+    state: restarted
+  when: write_daemon_json_result is changed
