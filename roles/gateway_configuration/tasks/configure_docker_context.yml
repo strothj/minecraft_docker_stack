@@ -1,0 +1,33 @@
+- name: Retrieve Docker context
+  ansible.builtin.command: docker context inspect {{ docker_context_name }}
+  register: context_inspect_result
+  changed_when: false
+  failed_when: false
+
+- name: Parse Docker context
+  ansible.builtin.set_fact:
+    existing_docker_context: '{{ context_inspect_result.stdout | ansible.builtin.from_json }}'
+  when: context_inspect_result.rc == 0
+
+- name: Determine if Docker context needs updating
+  ansible.builtin.set_fact:
+    should_update_docker_context: >-
+      {{
+        (existing_docker_context is not defined) or
+        (existing_docker_context[0].Endpoints.docker.Host != "ssh://root@" + ansible_host)
+      }}
+
+- name: Add or update Docker context
+  ansible.builtin.command:
+    argv:
+      [
+        'docker',
+        'context',
+        '{{ existing_docker_context is defined | ansible.builtin.ternary("update", "create") }}',
+        '{{ docker_context_name }}',
+        '--description',
+        '{{ docker_context_description }}',
+        '--docker',
+        'host=ssh://root@{{ ansible_host }}',
+      ]
+  when: should_update_docker_context

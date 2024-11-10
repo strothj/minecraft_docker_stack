@@ -6,6 +6,13 @@ argument_specs:
         required: true
         short_description: The IP addresses, IPv4 and IPv6, of the Ansible control node(s).
         type: list
+      docker_context_description:
+        short_description: A description displayed in Docker context listings.
+        type: str
+      docker_context_name:
+        required: true
+        short_description: The name of the Docker context used to connect to the gateway.
+        type: str
       gateway_firewall_group_name:
         short_description: Unique identifier for the gateway's firewall group on the cloud provider.
         required: true

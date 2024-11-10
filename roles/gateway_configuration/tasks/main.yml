@@ -11,3 +11,8 @@
 - name: Import tasks for deploying Docker services
   ansible.builtin.import_tasks: deploy_docker_services.yml
   tags: deploy_docker_services
+
+- name: Import tasks to configure Docker context
+  ansible.builtin.import_tasks: configure_docker_context.yml
+  delegate_to: localhost
+  tags: configure_docker_context
