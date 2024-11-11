@@ -42,9 +42,9 @@ RUN <<EOF
     tunnel
 EOF
 
-COPY --chmod=554 --from=gosu-installer --link /gosu /usr/local/bin/
+COPY --chown=root:root --chmod=554 --from=gosu-installer --link /gosu /usr/local/bin/
 
-COPY --chown=root --chmod=544 entrypoint.sh /
+COPY --chown=root:root --chmod=544 entrypoint.sh /
 ENTRYPOINT ["./entrypoint.sh"]
 CMD [ \
   # Drop privileges.

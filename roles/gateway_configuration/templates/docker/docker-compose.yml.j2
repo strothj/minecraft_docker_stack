@@ -5,7 +5,13 @@ networks:
     enable_ipv6: true
     ipam:
       config:
-        - subnet: {{ docker_ipv6_network_subnet_tunnel }}
+        - subnet: "{{ docker_ipv6_network_subnet_tunnel }}"
+
+secrets:
+  tunnel_authorized_keys:
+    file: ./secrets/tunnel_authorized_keys
+  tunnel_ssh_host_ed25519_key:
+    file: ./secrets/tunnel_ssh_host_ed25519_key
 
 services:
   caddy:
@@ -16,6 +22,19 @@ services:
     ports:
       - "25564:25564"
       - "25565:25565"
+    restart: unless-stopped
     volumes:
       - /opt/docker/caddy_config:/config
       - /opt/docker/caddy_data:/data
+
+  tunnel_host:
+    build:
+      context: ./tunnel_host_container
+    networks:
+      - tunnel
+    ports:
+      - "1022:1022"
+    restart: unless-stopped
+    secrets:
+      - tunnel_authorized_keys
+      - tunnel_ssh_host_ed25519_key

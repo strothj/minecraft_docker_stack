@@ -8,11 +8,15 @@
   ansible.builtin.import_tasks: configure_docker.yml
   tags: configure_docker
 
-- name: Import tasks for deploying Docker services
-  ansible.builtin.import_tasks: deploy_docker_services.yml
-  tags: deploy_docker_services
-
 - name: Import tasks to configure Docker context
   ansible.builtin.import_tasks: configure_docker_context.yml
   delegate_to: localhost
   tags: configure_docker_context
+
+- name: Import tasks for configuring tunnel SSH keys
+  ansible.builtin.import_tasks: configure_tunnel_ssh_keys.yml
+  tags: configure_tunnel_ssh_keys
+
+- name: Import tasks for deploying Docker services
+  ansible.builtin.import_tasks: deploy_docker_services.yml
+  tags: deploy_docker_services

@@ -1,0 +1,44 @@
+- name: Create folder for Docker secrets
+  ansible.builtin.file:
+    group: root
+    mode: '700'
+    owner: root
+    path: /opt/docker/secrets
+    state: directory
+
+- name: Generate tunnel host SSH key pair on gateway
+  community.crypto.openssh_keypair:
+    backend: opensshbin
+    comment: Tunnel Host
+    group: root
+    mode: '400'
+    owner: root
+    path: /opt/docker/secrets/tunnel_ssh_host_ed25519_key
+    state: present
+    type: ed25519
+  register: tunnel_host_ssh_key_pair_result
+
+- name: Generate tunnel client known_hosts file on server
+  ansible.builtin.copy:
+    content: '{{ ansible_host }} {{ tunnel_host_ssh_key_pair_result.public_key }}'
+    dest: '{{ secrets_folder }}/tunnel_known_hosts'
+    mode: '400'
+  delegate_to: localhost
+
+- name: Generate tunnel client SSH key pair on server
+  community.crypto.openssh_keypair:
+    backend: opensshbin
+    comment: Tunnel Client
+    mode: '400'
+    path: '{{ secrets_folder }}/tunnel_id_ed25519'
+    state: present
+    type: ed25519
+  delegate_to: localhost
+
+- name: Add tunnel client's SSH key to host's authorized_keys on gateway
+  ansible.builtin.copy:
+    dest: /opt/docker/secrets/tunnel_authorized_keys
+    group: root
+    mode: '400'
+    owner: root
+    src: '{{ secrets_folder }}/tunnel_id_ed25519.pub'

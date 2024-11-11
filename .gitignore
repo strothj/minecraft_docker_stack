@@ -1,14 +1,4 @@
 /.venv/
-/secrets2/
 
 /.envrc
 /config.yml
-
-# For known_hosts file.
-/ansible_data/
-
-/secrets/*
-!/secrets/*.example
-
-# For tunnel_client's private and public SSH keys, and known_hosts file.
-/tunnel_client_data/
