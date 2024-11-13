@@ -1,0 +1,18 @@
+- name: Create folder for SSH key pair
+  ansible.builtin.file:
+    group: '{{ ssh_key_group | default(omit) }}'
+    mode: '{{ ssh_key_directory_mode | default(omit) }}'
+    owner: '{{ ssh_key_owner | default(omit) }}'
+    path: '{{ ssh_key_path | ansible.builtin.dirname }}'
+    state: directory
+
+- name: Create SSH key pair
+  community.crypto.openssh_keypair:
+    backend: opensshbin
+    comment: '{{ ssh_key_comment }}'
+    group: '{{ ssh_key_group | default(omit) }}'
+    mode: '{{ ssh_key_mode | default(omit) }}'
+    owner: '{{ ssh_key_owner | default(omit) }}'
+    path: '{{ ssh_key_path }}'
+    state: present
+    type: ed25519

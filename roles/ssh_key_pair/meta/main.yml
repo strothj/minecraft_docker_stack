@@ -1,0 +1,16 @@
+argument_specs:
+  options:
+    ssh_key_comment:
+      required: true
+      type: string
+    ssh_key_directory_mode:
+      type: raw
+    ssh_key_group:
+      type: string
+    ssh_key_mode:
+      type: raw
+    ssh_key_owner:
+      type: string
+    ssh_key_path:
+      required: true
+      type: string

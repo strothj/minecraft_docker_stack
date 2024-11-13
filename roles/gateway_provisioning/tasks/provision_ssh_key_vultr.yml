@@ -1,7 +1,6 @@
 - name: Load SSH public key
   ansible.builtin.set_fact:
     gateway_ssh_key_public: '{{ lookup("ansible.builtin.file", gateway_ssh_key_path + ".pub") }}'
-  when: gateway_ssh_key_public is not defined
 
 - name: Provision SSH key
   vultr.cloud.ssh_key:

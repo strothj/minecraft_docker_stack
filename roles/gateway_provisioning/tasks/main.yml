@@ -1,15 +1,6 @@
-- name: Import tasks for creating SSH key
-  ansible.builtin.import_tasks: create_ssh_key.yml
-  tags: gateway_create_ssh_key
-
-- debug:
-    var: gateway_provider
-  tags: gateway_create_ssh_key
 - name: Import tasks to provision SSH key
   ansible.builtin.import_tasks: '{{ "provision_ssh_key_" + gateway_provider.name + ".yml" }}'
-  tags:
-    - gateway_create_ssh_key
-    - gateway_provision_ssh_key
+  tags: gateway_provision_ssh_key
 
 - name: Import tasks to provision firewall group
   ansible.builtin.import_tasks: '{{ "provision_firewall_group_" + gateway_provider.name + ".yml" }}'
